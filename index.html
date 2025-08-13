@@ -48,6 +48,9 @@
   </div>
 
 <script>
+/* ——— Налаштування анти-кешу ——— */
+const VERSION = 'v=2'; // якщо щось не оновлюється — підвищ цю цифру
+
 /* ——— Дані ——— */
 const STEPS = [
   { q: "Як ти мене називаєш з пісні?",
@@ -117,6 +120,11 @@ function renderHintArea(stepIdx){
   `;
 }
 
+function withVersion(url){
+  // додає ?v=2 або &v=2, щоб обійти кеш
+  return url + (url.includes('?') ? '&' : '?') + VERSION;
+}
+
 function showStep(){
   const step = STEPS[currentStep];
   const container = document.getElementById('card-container');
@@ -144,8 +152,8 @@ function checkAnswer(){
     msg.textContent = 'Вірно!'; msg.className = 'msg ok';
     const linksHTML = step.prize.links.map(l => `
       <div class="row">
-        <a href="${l.href}" target="_blank" rel="noopener"><button>У новій вкладці</button></a>
-        ${l.href.toLowerCase().endsWith('.pdf') ? `<a href="${l.href}" download><button class="ghost">Завантажити PDF</button></a>` : ''}
+        <a href="${withVersion(l.href)}" target="_blank" rel="noopener"><button>У новій вкладці</button></a>
+        ${l.href.toLowerCase().endsWith('.pdf') ? `<a href="${withVersion(l.href)}" download><button class="ghost">Завантажити PDF</button></a>` : ''}
       </div>`).join('');
     document.getElementById('card-container').innerHTML = `
       <h2 style="margin:0 0 6px">${step.prize.title}</h2>
@@ -170,4 +178,3 @@ function nextStep(){
 </script>
 </body>
 </html>
-
