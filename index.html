@@ -5,291 +5,185 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎉 Birthday Quest</title>
   <style>
-    :root{ --bg:#0f0f12; --card:#17171c; --muted:#a3a3b2; --accent:#e95d8c; --ok:#43d17d; }
+    :root{
+      --bg:#0f0f12; --card:#17171c; --muted:#a3a3b2; --accent:#e95d8c; --ok:#43d17d;
+    }
     *{box-sizing:border-box}
-    body{margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif; background:#0f0f12; color:#f7f7fb; line-height:1.5}
-    a{text-decoration:none}
-    .app{max-width:860px; margin:0 auto; padding:24px 16px 56px}
-    .card{background:linear-gradient(180deg, #1d1d25 0%, #111114 100%); border:1px solid #2a2a33; border-radius:20px; padding:24px; box-shadow:0 10px 30px #00000070}
-    header{display:flex; align-items:center; gap:16px; margin-bottom:16px}
-    header .emoji{font-size:34px}
-    h1{font-size:28px; margin:0}
-    p.lead{margin:4px 0 0; color:var(--muted)}
-    .hidden{display:none}
-    .q{margin-top:18px}
-    .q h2{font-size:20px; margin:0 0 10px}
-    .input{display:flex; gap:10px}
-    input[type="text"]{flex:1; padding:12px 14px; border-radius:12px; border:1px solid #30303a; background:#0d0d10; color:#fff; outline:none}
-    button{border:0; padding:12px 16px; border-radius:12px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer}
-    button.secondary{background:#2a2a33}
-    button:disabled{opacity:.6; cursor:not-allowed}
-    .msg{margin-top:10px; font-size:14px}
-    .msg.ok{color:var(--ok)}
-    .msg.err{color:#ff6b6b}
-    .prize{margin-top:18px; padding:16px; border-radius:16px; background:#121217; border:1px dashed #2f2f39}
-    .prize h3{margin:0 0 8px; font-size:18px}
-    .prize p{margin:0; color:var(--muted)}
-    .prize .actions{margin-top:10px; display:flex; gap:10px; flex-wrap:wrap}
-    .tag{display:inline-block; padding:6px 10px; border-radius:999px; background:#23232b; color:#d9d9e0; font-size:12px}
-    .progress{height:8px; background:#20202a; border-radius:999px; overflow:hidden; margin:18px 0}
-    .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), #8a6fe8)}
-    footer{margin-top:28px; color:var(--muted); font-size:12px}
-
-    /* Екран пароля */
-    .gate{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px}
-    .gate .panel{max-width:520px; width:100%; background:#17171c; border:1px solid #2a2a33; border-radius:20px; padding:24px; text-align:center}
-    .gate h1{margin:0 0 6px 0}
-    .gate p{margin:0; color:var(--muted)}
-    noscript{display:block; background:#2a2a33; color:#fff; padding:12px; text-align:center}
+    body { background:var(--bg); color:#f7f7fb; font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", sans-serif; margin:0; }
+    .center { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px; }
+    .hidden { display:none; }
+    .app { max-width:860px; margin:0 auto; padding:24px 16px 56px; text-align:center; }
+    .card { background:var(--card); border-radius:20px; padding:24px; box-shadow:0 10px 30px #00000070; animation: fadeIn .4s ease; }
+    input, button { padding:10px 14px; border-radius:10px; border:none; margin-top:10px; font-size:16px; }
+    input { width:260px; text-align:center; background:#0d0d10; color:#fff; border:1px solid #2a2a33; }
+    button { background:var(--accent); color:#fff; cursor:pointer; font-weight:600; transition: transform .08s ease, background .25s ease; }
+    button:hover { background:#ff77a8; }
+    button:active { transform: translateY(1px); }
+    .ghost { background:#2a2a33; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+    .hint-badge { display:inline-block; background:#2a2a33; color:#fff; padding:8px 14px; border-radius:999px; margin-top:12px; font-size:14px; animation: fadeIn .3s ease; }
+    .msg { margin-top:10px; font-size:14px; }
+    .ok { color:var(--ok); }
+    .err { color:#ff6b6b; }
+    @keyframes fadeIn { from {opacity:0; transform:translateY(8px);} to {opacity:1; transform:translateY(0);} }
   </style>
 </head>
 <body>
-  <noscript>Цей квест потребує ввімкненого JavaScript.</noscript>
-
-  <!-- Екран-заставка з паролем -->
-  <div id="screen-gate" class="gate">
-    <div class="panel">
-      <div style="font-size:40px; margin-bottom:6px">🔒</div>
-      <h1>Доступ обмежений</h1>
-      <p>Як Сонечко тебе називає?</p>
-      <div class="q" style="margin-top:14px">
-        <div class="input">
-          <input id="gate-answer" type="text" placeholder="Введи фразу" autocomplete="off" />
-          <button id="gate-check" type="button">Увійти</button>
-        </div>
-        <div class="msg" id="gate-msg"></div>
-      </div>
-    </div>
+  <!-- GATE (password) -->
+  <div id="lock-screen" class="center">
+    <h1>🔒 Доступ обмежений</h1>
+    <p>Як Сонечко тебе називає?</p>
+    <input type="text" id="password" placeholder="Відповідь..." />
+    <button id="btn-open">Відкрити</button>
+    <div id="lock-msg" class="msg err"></div>
   </div>
 
-  <!-- Основний застосунок (квест) -->
-  <div id="app-shell" class="hidden">
+  <!-- GAME -->
+  <div id="game" class="hidden">
     <div class="app">
-      <div class="card">
-        <header>
-          <div class="emoji">🎉</div>
-          <div>
-            <h1>Birthday Quest</h1>
-            <p class="lead">7 запитань → 7 призів. Грай чесно. Пиши відповіді словами 😉</p>
-          </div>
-        </header>
-
-        <div class="progress" aria-label="Прогрес проходження"><div class="bar" id="bar"></div></div>
-
-        <div id="screen-start" class="q">
-          <h2>Готовий? Натисни, щоб почати.</h2>
-          <button id="btn-start" type="button">Почати гру</button>
-        </div>
-
-        <div id="screen-quiz" class="hidden">
-          <div class="q">
-            <div class="tag" id="q-index">1 / 7</div>
-            <h2 id="q-text">Питання…</h2>
-            <div class="input">
-              <input id="answer" type="text" placeholder="Введи відповідь словами" autocomplete="off" />
-              <button id="btn-check" type="button">Перевірити</button>
-            </div>
-            <div class="msg" id="msg"></div>
-            <div class="prize hidden" id="prize">
-              <h3 id="prize-title">Приз</h3>
-              <p id="prize-text">Опис призу або натяк.</p>
-              <div class="actions" id="prize-actions"></div>
-            </div>
-            <div class="nav" style="display:flex; justify-content:space-between; margin-top:16px">
-              <button id="btn-hint" class="secondary" type="button">Підказка</button>
-              <button id="btn-next" class="hidden" type="button">Далі →</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="screen-end" class="hidden">
-          <h2>✨ Квест пройдено!</h2>
-          <p class="lead">Ти відкрив усі призи. Перевір пошту/повідомлення — там на тебе чекає ще один сюрприз 💌</p>
-          <div class="prize">
-            <h3>Фінальне привітання</h3>
-            <p>Переглянь головне відео-привітання тут:</p>
-            <div class="actions"><a id="final-video" href="#" target="_blank" rel="noopener"><button type="button">Відкрити відео</button></a></div>
-          </div>
-        </div>
-
-        <footer>
-          <p>Зроблено з любов'ю. Підказка: відповіді не чутливі до регістру, зайві пробіли і м'які апострофи ігноруються.</p>
-          <p style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Liberation Mono', 'DejaVu Sans Mono', 'Courier New', monospace; font-size:12px; color:#bdbdd2">
-            Тестування: відкрий консоль браузера — там є автоматичні самоперевірки.
-          </p>
-        </footer>
-      </div>
+      <div class="card" id="card-container"></div>
     </div>
   </div>
 
-  <script>
-  // Безпечний запуск після готовності DOM
-  document.addEventListener('DOMContentLoaded', () => {
-    try {
-      // ——— Утиліти ———
-      // Без Unicode property escapes (сумісно з усіма браузерами)
-      const normalize = (s) => (s||"")
-        .toLowerCase()
-        .replace(/[`ʼ'’]/g, "'")
-        .replace(/[^a-zа-щьюяєіїґ0-9'\s-]+/gi, "")
-        .replace(/\s+/g, " ")
-        .trim();
+<script>
+// === Data ===
+const STEPS = [
+  {
+    q: "Як ти мене називаєш з пісні?",
+    answers: ["девочка пиздец", "дєвочка піздец"],
+    hint: "🎤 Подсказка: как у Oxxxymiron",
+    prize: { title: "Вітальна листівка", text: "Почнемо з м'якого — але гарячого", links: [ { label: "Відкрити листівку", href: "./prizes/Birthday-card.jpg" } ] }
+  },
+  {
+    q: "Якого числа і місяця ми познайомились? (прописом)",
+    answers: ["другого березня"],
+    hint: "🌸 Весна, початок історії",
+    prize: { title: "Лист від мене (PDF)", text: "Я написала це спеціально для тебе", links: [ { label: "Завантажити лист", href: "./prizes/Letter.pdf", download: true } ] }
+  },
+  {
+    q: "Як ти себе любиш називати? (підказка: С П О)",
+    answers: ["стара пойобана ондатра"],
+    hint: "😈 Три слова, ініціали С-П-О",
+    prize: { title: "Оксідрочер — відео", text: "Трохи абсурду, трохи сміху", links: [ { label: "Відтворити відео", href: "./prizes/oxydrocher.mp4" } ] }
+  },
+  {
+    q: "Візьми кожну букву по черзі (1-ша, 2-га…), 'my nobby mate honor nowcz derbby  maverik bestival'",
+    answers: ["мотоцикл"],
+    hint: "🏍 Дві колісні пристрасті…",
+    prize: { title: "Сертифікат на байк", text: "Поїхали!", links: [ { label: "Відкрити сертифікат", href: "./prizes/Certificate-Moto.jpg" } ] }
+  },
+  {
+    q: "Що я колись обіцяла подарувати тобі на день народження? (підказка: скоріш за все червоненькі)",
+    answers: ["трусики", "панталки", "плавки"],
+    hint: "💋 Маленький текстиль із великим настроєм",
+    prize: { title: "Сертифікат на еротовари", text: "Використай мудро", links: [ { label: "Відкрити сертифікат", href: "./prizes/Certificate-tr.jpg" } ] }
+  },
+  {
+    q: "З якою квіткою тебе асоціювала Пані?",
+    answers: ["едельвейс", "еделвейс"],
+    hint: "🌼 Рідкісна гірська красуня",
+    prize: { title: "PlayMe (PDF)", text: "Легка пікантність", links: [ { label: "Відкрити PDF", href: "./prizes/PlayMe.pdf", download: true } ] }
+  },
+  {
+    q: "Хто народжується у серпні? Не забувайте про це 😜",
+    answers: ["лев", "діва", "ти", "я"],
+    hint: "🦁 Між Левом і Дівою… або просто ТИ",
+    prize: { title: "Фінальне відео-привітання", text: "Натисни, щоб переглянути фінал", links: [ { label: "Дивитись відео", href: "./prizes/Z-DR.mp4" } ] }
+  }
+];
 
-      // ——— Парольна заставка ———
-      const GATE = { answers: ["не зануда", "незануда", "не-зануда"], failText: "Хм… А точно Сонечко так казало? 😉" };
+// === Gate logic ===
+const normalize = s => (s||"").toLowerCase().trim();
+document.getElementById('btn-open').addEventListener('click', () => {
+  const val = normalize(document.getElementById('password').value);
+  if (val === 'не зануда' || val === 'незануда') {
+    document.getElementById('lock-screen').classList.add('hidden');
+    document.getElementById('game').classList.remove('hidden');
+    showStep();
+  } else {
+    document.getElementById('lock-msg').textContent = 'Хм… А точно Сонечко так казало? 😉';
+  }
+});
+document.getElementById('password').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('btn-open').click(); });
 
-      const screenGate = document.getElementById('screen-gate');
-      const appShell   = document.getElementById('app-shell');
-      const gateAnswer = document.getElementById('gate-answer');
-      const gateCheck  = document.getElementById('gate-check');
-      const gateMsg    = document.getElementById('gate-msg');
+// === Game rendering ===
+let currentStep = 0;
 
-      function checkGate(){
-        const val = normalize(gateAnswer.value);
-        if (GATE.answers.map(normalize).includes(val)){
-          gateMsg.textContent = 'Ласкаво просимо ✨';
-          gateMsg.className = 'msg ok';
-          setTimeout(()=>{
-            screenGate.classList.add('hidden');
-            appShell.classList.remove('hidden');
-            const sBtn = document.getElementById('btn-start');
-            if(sBtn) sBtn.focus();
-          }, 300);
-        } else {
-          gateMsg.textContent = GATE.failText;
-          gateMsg.className = 'msg err';
-        }
-      }
-      gateCheck.addEventListener('click', checkGate);
-      gateAnswer.addEventListener('keydown', (e)=>{ if(e.key==='Enter') checkGate(); });
+function renderHintArea(stepIdx){
+  const step = STEPS[stepIdx];
+  return `
+    <div id="hint-wrap" class="hidden">
+      <div class="hint-badge">${step.hint}</div>
+    </div>
+    <div class="row">
+      <button class="ghost" id="btn-hint" type="button">Показати підказку</button>
+      <button class="ghost" id="btn-answer" type="button">Показати відповідь</button>
+    </div>
+  `;
+}
 
-      // ——— Контент квесту ———
-      const STEPS = [
-        { q: "Якого числа і місяця ми познайомилися? (відповідь прописом)", answers: ["другого березня"], hint: "Згадаєш наш перший день… весна 😉", prize: { title: "Вітальна листівка", text: "Твоя персональна листівка на сьогодні", links: [ { label: "Відкрити листівку", href: "./prizes/birthday-card.jpg" } ] } },
-        { q: "Як ти себе любиш називати? (підказка: С П О)", answers: ["стара пойобана ондатра"], hint: "Три слова. Ініціали: С П О.", prize: { title: "Жартівлива картинка", text: "Трохи абсурду для ідеального настрою", links: [ { label: "Подивитись мем (оксідрочер)", href: "./prizes/funny-joke.png" } ] } },
-        { q: "Як мене звати?", answers: ["юліанна", "юліана"], hint: "Пишеться через Ю…", prize: { title: "Лист від мене (PDF)", text: "Те, що хотіла сказати тобі сьогодні", links: [ { label: "Завантажити PDF", href: "./prizes/love-letter.pdf", download: true } ] } },
-        { q: "З якою квіткою тебе асоціювала Пані?", answers: ["едельвейс", "еделвейс"], hint: "Гірська рідкісна квітка", prize: { title: "Playboy-style сюрприз", text: "Легка пікантність у святковому стилі", links: [ { label: "Відкрити обкладинку", href: "./prizes/playboy-style-cover.jpg" } ] } },
-        { q: "Візьми кожну букву по черзі (1-ша, 2-га…), 'my nobby mate honor nowcz derbby maverik bestival'", answers: ["мотоцикл"], hint: "Дві колісні пристрасті…", prize: { title: "Сертифікат на байк", text: "Офіційно. Підтверджено. Поїхали!", links: [ { label: "Завантажити сертифікат (PDF)", href: "./prizes/bike-gift-certificate.pdf", download: true } ] } },
-        { q: "Що я колись обіцяла подарувати тобі на день народження? (підказка: скоріш за все червоненькі)", answers: ["трусики", "панталки", "плавки"], hint: "Маленький текстиль із великим настроєм", prize: { title: "Сертифікат на еротичні товари", text: "Використай з розумом і задоволенням 😏", links: [ { label: "Завантажити сертифікат (PDF)", href: "./prizes/erotic-shop-gift-certificate.pdf", download: true } ] } },
-        { q: "Фінал: яке моє головне бажання для тебе сьогодні?", answers: ["щастя","кохання","перемога","здоровя","здоров'я","усмішки","радість"], hint: "Те, що гріє зсередини 💖", prize: { title: "Головне відео-привітання", text: "Натисни, щоб переглянути фінал", links: [ { label: "Перейти до відео", href: "https://example.com/video" } ] } }
-      ];
+function showStep(){
+  const step = STEPS[currentStep];
+  const container = document.getElementById('card-container');
+  container.innerHTML = `
+    <h2 style="margin:0 0 6px 0">${step.q}</h2>
+    <input type='text' id='answer' placeholder='Відповідь...'>
+    <div class="row">
+      <button id='btn-check' type='button'>Відповісти</button>
+    </div>
+    ${renderHintArea(currentStep)}
+    <div id="msg" class="msg"></div>
+  `;
 
-      // ——— Змінні інтерфейсу ———
-      const start = document.getElementById('screen-start');
-      const quiz  = document.getElementById('screen-quiz');
-      const end   = document.getElementById('screen-end');
-      const qText = document.getElementById('q-text');
-      const qIndex= document.getElementById('q-index');
-      const answerEl = document.getElementById('answer');
-      const btnStart = document.getElementById('btn-start');
-      const btnCheck = document.getElementById('btn-check');
-      const btnHint  = document.getElementById('btn-hint');
-      const btnNext  = document.getElementById('btn-next');
-      const msg   = document.getElementById('msg');
-      const prizeBox = document.getElementById('prize');
-      const prizeTitle = document.getElementById('prize-title');
-      const prizeText = document.getElementById('prize-text');
-      const prizeActions = document.getElementById('prize-actions');
-      const bar   = document.getElementById('bar');
-      const finalVideo = document.getElementById('final-video');
-
-      let i = 0;
-
-      function updateProgress(){
-        const pct = Math.round((i)/STEPS.length*100);
-        bar.style.width = pct + '%';
-      }
-      function renderStep(){
-        const step = STEPS[i];
-        qText.textContent = step.q;
-        qIndex.textContent = `${i+1} / ${STEPS.length}`;
-        answerEl.value = '';
-        msg.textContent = '';
-        msg.className = 'msg';
-        prizeBox.classList.add('hidden');
-        btnNext.classList.add('hidden');
-        updateProgress();
-        setTimeout(()=>answerEl && answerEl.focus(), 50);
-      }
-      function showPrize(prize){
-        prizeTitle.textContent = prize.title;
-        prizeText.textContent = prize.text;
-        prizeActions.innerHTML = '';
-        (prize.links||[]).forEach(link => {
-          const a = document.createElement('a');
-          a.href = link.href || '#';
-          a.target = '_blank';
-          a.rel = 'noopener';
-          if(link.download) a.setAttribute('download','');
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.textContent = link.label || 'Відкрити';
-          a.appendChild(b);
-          prizeActions.appendChild(a);
-        });
-        prizeBox.classList.remove('hidden');
-      }
-      function check(){
-        const step = STEPS[i];
-        const val = normalize(answerEl.value);
-        const ok = step.answers.map(normalize).includes(val);
-        if(ok){
-          msg.textContent = 'Вірно!';
-          msg.className = 'msg ok';
-          showPrize(step.prize);
-          btnNext.classList.remove('hidden');
-        } else {
-          msg.textContent = 'Не зовсім. Спробуй ще або натисни «Підказка».\nПиши відповідь словами (без цифр).';
-          msg.className = 'msg err';
-        }
-      }
-
-      // ——— Навігація ———
-      btnStart.addEventListener('click', () => {
-        start.classList.add('hidden');
-        quiz.classList.remove('hidden');
-        i = 0; renderStep();
-      });
-      btnCheck.addEventListener('click', check);
-      answerEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter') check(); });
-      btnHint.addEventListener('click', ()=>{
-        const step = STEPS[i];
-        msg.textContent = step.hint || 'Без підказок 😉';
-        msg.className = 'msg';
-      });
-      btnNext.addEventListener('click', ()=>{
-        i++;
-        if(i >= STEPS.length){
-          quiz.classList.add('hidden');
-          end.classList.remove('hidden');
-          bar.style.width = '100%';
-          const last = STEPS[STEPS.length-1];
-          const link = (last.prize.links && last.prize.links[0] && last.prize.links[0].href) || '#';
-          finalVideo.href = link;
-        } else {
-          renderStep();
-        }
-      });
-
-      // ——— Самоперевірки ("тести") ———
-      (function runSelfTests(){
-        try {
-          const eq = (a,b)=>a===b;
-          console.assert(eq(normalize(" Не  Зануда "), "не зануда"), 'normalize fails on spacing');
-          console.assert(["не зануда","незануда","не-зануда"].some(a=>normalize(a)===normalize("Не Зануда")), 'gate answers equivalence');
-          console.assert(Array.isArray(STEPS) && STEPS.length===7, 'There must be 7 steps');
-          console.assert(STEPS[0].answers.includes("другого березня"), 'Q1 expected answer');
-          console.assert(STEPS[5].answers.some(a=>a.includes('трус')), 'Q6 lingerie answer expected');
-          console.assert(STEPS[0].prize.links[0].href.includes('birthday-card.jpg'), 'Q1 prize path updated');
-          console.log('%cSelf-tests passed','color:#43d17d');
-        } catch(e){ console.warn('Self-tests error', e); }
-      })();
-    } catch(err){
-      console.error('Init error', err);
-      const g = document.getElementById('gate-msg');
-      if(g){ g.textContent = 'Сталася помилка ініціалізації. Спробуй оновити сторінку.'; g.className='msg err'; }
-    }
+  // Wire buttons
+  document.getElementById('btn-check').addEventListener('click', checkAnswer);
+  document.getElementById('answer').addEventListener('keydown', e => { if(e.key==='Enter') checkAnswer(); });
+  document.getElementById('btn-hint').addEventListener('click', ()=>{
+    document.getElementById('hint-wrap').classList.remove('hidden');
   });
-  </script>
+  document.getElementById('btn-answer').addEventListener('click', ()=>{
+    // Autofill with the first accepted answer and auto-submit
+    const input = document.getElementById('answer');
+    input.value = STEPS[currentStep].answers[0];
+    checkAnswer();
+  });
+}
+
+function checkAnswer(){
+  const step = STEPS[currentStep];
+  const val = normalize(document.getElementById('answer').value);
+  const ok = step.answers.map(normalize).includes(val);
+  const msg = document.getElementById('msg');
+
+  if(ok){
+    msg.textContent = 'Вірно!';
+    msg.className = 'msg ok';
+    // Show prize
+    let linksHTML = step.prize.links.map(l => {
+      const target = l.download ? "download" : "target='_blank' rel='noopener'";
+      return `<a href='${l.href}' ${target} style='color:var(--accent); display:block; margin:10px 0;'>${l.label}</a>`;
+    }).join('');
+    document.getElementById('card-container').innerHTML = `
+      <h2 style="margin:0 0 6px 0">${step.prize.title}</h2>
+      <p style="color:var(--muted)">${step.prize.text}</p>
+      ${linksHTML}
+      <div class="row"><button id="btn-next">Далі →</button></div>
+    `;
+    document.getElementById('btn-next').addEventListener('click', nextStep);
+  } else {
+    msg.textContent = 'Не зовсім… спробуй ще 😉';
+    msg.className = 'msg err';
+  }
+}
+
+function nextStep(){
+  currentStep++;
+  if(currentStep < STEPS.length){
+    showStep();
+  } else {
+    document.getElementById('card-container').innerHTML = '<h2>Квест завершено! 🎉</h2><p>Ти пройшов усі завдання!</p>';
+  }
+}
+</script>
 </body>
 </html>
